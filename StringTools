@@ -1,0 +1,240 @@
+package it.alpitour.easyglobe.util;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
+public class StringTools extends StringUtils {
+
+
+    public static String ensureIsNotNull(String s) {
+
+        if (s!=null) {
+
+
+            if (s.contains("\u0000")) {
+                // ok, non è nullo ma contiene i simboli null di Java
+                return "";
+            } else {
+                return s;
+            }
+        } else {
+            return "";
+        }
+    }
+
+    public static boolean isNotNull(String s) {
+        return s!=null;
+    }
+
+    public static String trimIfExists(String s) {
+      return superTrim(ensureIsNotNull(s));
+    }
+
+    public static String superTrim(String s) {
+
+        if(s==null){s="";}
+
+        String ret= s;
+
+        ret=ret.trim();
+        ret = ""+ret.replaceAll("/ +(?= )/g","");
+
+        return ret;
+
+    }
+
+    public static String bigDecimalToString(BigDecimal bd) {
+
+
+        return bd.setScale(0, RoundingMode.HALF_UP).toString();
+    }
+
+
+    public static String generateGuid() {
+        return UUID.randomUUID().toString();
+    }
+
+    public static boolean isNullOrEmpty(String s) {
+        return s==null || s.isEmpty();
+    }
+
+    public static boolean isNullOrWhiteSpace(String s) {
+
+        return s==null || StringUtils.deleteWhitespace(s).isEmpty();
+    }
+
+    public static String truncateNotNull(String s, Integer max) {
+
+        try{
+            String ret=truncate(s,max);
+
+            return ret!=null ? ret : "";
+        }catch(Exception e){
+
+            return "";
+        }
+
+    }
+
+    public static boolean gc2Boolean(String s){
+
+        if(s==null){s="N";}
+
+        return s.equalsIgnoreCase("S");
+
+    }
+
+    public static String replaceNewLines(String s){
+       return replaceNewLinesWith(s,"<br>");
+    }
+
+
+    public static String replaceNewLinesWith(String s, String r){
+
+        if(isNullOrEmpty(s)){s="";}
+
+        return s.replaceAll("(\r\n|\n\r|\r|\n)", r);
+    }
+
+
+    public static List<String> toStringArraywithBrAndChunck(String s, Integer size){
+
+        List<String> ret=new ArrayList<>();
+
+        String[] tmpArr = s.split("<br>");
+
+        for (String s1 : tmpArr) {
+
+            ret.addAll(toChunks(s1,size));
+
+
+        }
+
+
+
+        return ret;
+    }
+
+
+    public static List<String> toChunks(String s, Integer size){
+
+        List<String> ret=new ArrayList<>();
+        boolean finito = false;
+
+        try {
+           while(!finito){
+               if(s.length() > size){
+                   String tmp = s.substring(0, size);
+                   int index = lastIndexOf(tmp," ");
+                   String tmpAfterSpace = s.substring(0,index);
+                   ret.add(tmpAfterSpace);
+                   s = s.substring(index + 1);
+
+               }else{
+                   ret.add(s);
+                   finito = true;
+               }
+           }
+
+        }catch(Exception e){
+
+
+        }
+
+        return ret;
+
+    }
+
+    public static Integer getLineNumberWithSymbol(String s, Integer charXline, String symbol){
+
+        if(isNullOrEmpty(s)){return 0;}
+
+        Integer ret=0;
+
+        String tmp=""+s;
+
+        tmp=replaceNewLinesWith(tmp,symbol); // Da qui in poi non abbiamo piu i \n
+
+        String[] tmpSplitted = tmp.split(symbol);
+
+        for (String stringa : tmpSplitted) {
+            String tmpLinea=stringa.replaceAll("\\<.*?\\>", ""); //Togliamo i tag HTML(<br> lo abbiamo usato per splittare quindi non ce l'abbiamo pure)
+            List<String> tmpChuck = toChunks(tmpLinea, charXline);
+
+            ret+=tmpChuck.size();
+        }
+
+
+
+
+        return ret;
+
+
+
+    }
+
+    public static Integer getLineNumber(String s, Integer charXline){
+
+
+        return getLineNumberWithSymbol(s,charXline,"<br>");
+
+    }
+
+
+    public static String pluto(String s, Integer charXline){
+
+
+        return plutoWithSymbol(s,charXline,"<br>");
+
+    }
+
+    public static String plutoWithSymbol(String s, Integer charXline, String symbol){
+
+        if(isNullOrEmpty(s)){return "";}
+
+        ArrayList<String> ret=new ArrayList<>();
+
+        String tmp=""+s;
+
+        tmp=replaceNewLinesWith(tmp,symbol); // Da qui in poi non abbiamo piu i \n
+
+        String[] tmpSplitted = tmp.split(symbol);
+
+        for (String stringa : tmpSplitted) {
+            String tmpLinea=stringa/*.replaceAll("\\<.*?\\>", "")*/; //Togliamo i tag HTML(<br> lo abbiamo usato per splittare quindi non ce l'abbiamo pure)
+            List<String> tmpChuck = toChunks(tmpLinea, charXline);
+
+            for (String s1 : tmpChuck) {
+                ret.add(s1);
+            }
+
+        }
+
+
+
+
+        return String.join(symbol, ret);
+
+
+
+    }
+
+
+
+    public static String readableException(Exception e){
+
+
+
+return e.toString();
+
+    }
+
+
+
+}
