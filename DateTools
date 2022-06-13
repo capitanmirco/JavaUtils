@@ -1,0 +1,122 @@
+import org.apache.commons.lang3.time.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+
+public class DateTools extends DateUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(DateTools.class);
+
+    public static Date fromGC2EG(XMLGregorianCalendar dtm){
+
+        return dtm.toGregorianCalendar().getTime();
+
+    }
+
+    public static Calendar toCalendar(Date d){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(d);
+        return cal;
+    }
+
+    public static Date fixTimeZone(Date d){
+
+        Calendar tmpCal = new GregorianCalendar();
+        tmpCal.setTime(d);
+        tmpCal.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+
+
+        return DateTools.round(tmpCal.getTime(), Calendar.DATE);
+
+    }
+
+    public static XMLGregorianCalendar  fromEG2GC(Date d){
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(DateTools.fixTimeZone(d));
+        try {
+            return DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
+        } catch (DatatypeConfigurationException e) {
+            logger.error("Error Converting date to GC/SOS: {}",e.getMessage());
+
+        }
+return null;
+    }
+
+    public static Date newUTCDate(){
+
+        return new Date();
+
+    }
+
+    public static Long daysBetween(Date from, Date to){
+
+
+
+        long diffInMillies = Math.abs(to.getTime() - from.getTime());
+        long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+
+        return diff;
+    }
+
+
+    public static Date addHoursToDate(Date date, int hours) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.HOUR_OF_DAY, hours);
+        return calendar.getTime();
+    }
+
+    public static String toJsonString(Date d){
+
+
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        return dateFormat.format(d);
+
+
+    }
+
+    public static String toPrettyString(Date d){
+
+
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        return dateFormat.format(d);
+
+
+    }
+
+    public static String toPrettyString(Date d, boolean withAdjust){
+
+        if(withAdjust){
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(d);
+            calendar.add(Calendar.HOUR_OF_DAY, 6);
+            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            return dateFormat.format(calendar.getTime());
+        }
+
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        return dateFormat.format(d);
+
+
+    }
+
+    public static int hoursAgo(Date date) {
+        Date now = Calendar.getInstance().getTime();
+        long millDiff = now.getTime() - date.getTime();
+        long hrsDiff = (millDiff) / 1000L / 60L / 60L;
+        return (int)hrsDiff;
+    }
+
+}
