@@ -1,0 +1,60 @@
+import com.google.gson.*;
+import it.alpitour.easyglobe.model.XMLGregoriancalendarAdapterClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.lang.reflect.Type;
+
+
+public class XMLGregorianCalendarDeserializer
+        implements JsonDeserializer<XMLGregorianCalendar>, JsonSerializer<XMLGregorianCalendar>{
+
+    Logger logger = LoggerFactory.getLogger(XMLGregorianCalendarDeserializer.class);
+
+
+
+
+
+    @Override
+    public XMLGregorianCalendar deserialize(JsonElement json, Type typeOfT,
+                                            JsonDeserializationContext context) throws JsonParseException {
+        // Easily parse the adapter class first
+        XMLGregoriancalendarAdapterClass ac =
+                new Gson().fromJson(json,
+                        XMLGregoriancalendarAdapterClass.class);
+        try {
+            // Then return a new newXMLGregorianCalendar
+            // using values in adapter class
+            return DatatypeFactory.newInstance()
+                    .newXMLGregorianCalendar(ac.getYear(), ac.getMonth(),
+                            ac.getDay(), ac.getHour(),
+                            ac.getMinute(), ac.getSecond(),
+                            ac.getFractionalSecond(), ac.getTimezone());
+        } catch (DatatypeConfigurationException e) {
+            this.logger.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public JsonElement serialize(XMLGregorianCalendar xg, Type type, JsonSerializationContext jsonSerializationContext) {
+
+        JsonObject ret=new JsonObject();
+
+        ret.add("year",new JsonPrimitive(xg.getYear()));
+        ret.add("month",new JsonPrimitive(xg.getMonth()));
+        ret.add("day",new JsonPrimitive(xg.getDay()));
+        ret.add("hour",new JsonPrimitive(xg.getHour()));
+        ret.add("minute",new JsonPrimitive(xg.getMinute()));
+        ret.add("second",new JsonPrimitive(xg.getSecond()));
+        ret.add("millisecond",new JsonPrimitive(xg.getMillisecond()));
+        ret.add("timezone",new JsonPrimitive(xg.getTimezone()));
+
+        return ret;
+
+
+    }
+}
