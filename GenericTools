@@ -1,0 +1,85 @@
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.ibm.cloud.cloudant.v1.model.Document;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigDecimal;
+import java.util.Date;
+
+public class GenericTools {
+
+
+    public static <T> boolean isNullOrEmpty(T obj){
+
+        return obj==null;
+
+
+
+    }
+
+
+    public static <T> T DeepClone(T obj,Class<T> objType){
+
+        Gson gson=GsonTools.buildEasyGlobe();
+
+
+        String json=gson.toJson(obj);
+
+
+        return gson.fromJson(json,objType);
+
+
+
+    }
+
+    public static <T,Y> T DeepCloneToAny(Y obj,Class<T> objType){
+
+        Gson gson= new GsonBuilder().setPrettyPrinting()
+                .registerTypeAdapter(XMLGregorianCalendar.class,new XMLGregorianCalendarDeserializer())
+                .registerTypeAdapter(Enums.HistoryContractOrigin.class, new EnumByOrdinalSerializer<>())
+                .registerTypeAdapter(Enums.HistoryContractAction.class, new EnumByOrdinalSerializer<>())
+                .registerTypeAdapter(Enums.WFScope.class, new EnumByOrdinalSerializer<>())
+                .registerTypeAdapter(Enums.OfferteCumulabilita.class, new EnumByOrdinalSerializer<>())
+                .registerTypeAdapter(Enums.TipoDiNoteLegali.class, new EnumByOrdinalSerializer<>())
+                .registerTypeAdapter(Enums.Result.class, new EnumByOrdinalSerializer<>())
+                .registerTypeAdapter(Enums.ImportExportStatus.class, new EnumByOrdinalSerializer<>())
+                .registerTypeAdapter(Enums.WeekDay.class, new EnumByOrdinalSerializer<>())
+                .registerTypeAdapter(Date.class, new DateSerializer())
+                .registerTypeAdapter(Long.class, new LongTypeAdapter())
+                .registerTypeAdapter(BigDecimal.class, new BigDecimalTypeAdapter())
+                .registerTypeAdapter(Integer.class, new IntegerTypeAdapter())
+                .setFieldNamingStrategy(f -> f.getName().toLowerCase())
+                .create();
+
+
+
+
+
+
+        String json=gson.toJson(obj);
+
+
+        return gson.fromJson(json,objType);
+
+
+
+    }
+
+
+    public static <T> T Convert(Object doc, Class<T> targetType){
+        try {
+
+            Gson gson = GsonTools.buildEasyGlobe();
+            String docString=doc.toString();
+            return gson.fromJson(docString, targetType);
+
+        }catch (Exception e) {
+
+            return null;
+
+        }
+
+    }
+
+
+}
